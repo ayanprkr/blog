@@ -34,7 +34,11 @@ const {
 	</head>
 
 	<body>
-		<Header />
+		<header>
+			<nav>
+				<a class="text-neutral-400 hover:text-neutral-500" href="/">.../</a>
+			</nav>
+		</header>
 		<main>
 			<article>
 				{heroImage && (
@@ -46,10 +50,14 @@ const {
 					/>
 				)}
 				<h1 class="title">{title}</h1>
-				{pubDate && <time>{pubDate}</time>}
-				{updatedDate && <div>Last updated on <time>{updatedDate}</time></div>}
-				<hr/>
-				<slot />
+				<p>{pubDate && <time>{pubDate}</time>}</p>
+				<p>{updatedDate && <div>Last updated on <time>{updatedDate}</time></div>}</p>
+				
+				<hr />
+
+				<div class="flex flex-col gap-5 py-5">
+					<slot />
+				</div>
 			</article>
 		</main>
 		<Footer />
