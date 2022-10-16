@@ -1,6 +1,5 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
-import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 
 export interface Props {
@@ -21,16 +20,10 @@ const {
 <html lang="en">
 	<head>
 		<BaseHead title={title} description={description} />
-		<style>
-			.title {
-				font-size: 2em;
-				margin: 0.25em 0 0;
-			}
-			hr {
-  				border-top: 1px solid #DDD;
-				margin: 1rem 0;
-			}
-		</style>
+
+		<meta property="og:image" content={heroImage}>
+		<meta property="twitter:card" content="summary_large_image">
+		<meta property="twitter:image" content={heroImage}>
 	</head>
 
 	<body>
@@ -41,20 +34,12 @@ const {
 		</header>
 		<main>
 			<article>
-				{heroImage && (
-					<img
-						width={720}
-						height={360}
-						src={heroImage}
-						alt=""
-					/>
-				)}
-				<h1 class="title">{title}</h1>
-				<p>{pubDate && <time>{pubDate}</time>}</p>
-				<p>{updatedDate && <div>Last updated on <time>{updatedDate}</time></div>}</p>
+				<h1 class="text-3xl py-3">{title}</h1>
+				<p class="pb-3">{pubDate && <time>{pubDate}</time>}</p>
+				<p class="pb-3">{updatedDate && <div>Last updated on <time>{updatedDate}</time></div>}</p>
 				
-				<hr />
-
+				<div class="bg-neutral-900 h-px" />
+				
 				<div class="flex flex-col gap-5 py-5">
 					<slot />
 				</div>

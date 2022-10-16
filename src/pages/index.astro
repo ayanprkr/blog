@@ -18,16 +18,16 @@ const posts = (await Astro.glob('./blog/*.{md,mdx}')).sort(
 		<Header title={SITE_TITLE} />
 		<main>
 			<div class="flex flex-col gap-5">
-				<h1 class="font-bold text-3xl">🧑‍🚀 Hello, Astronaut!</h1>
-				<p class="">
+				<!--h1 class="font-bold text-xl md:text-3xl">🧑‍🚀 Hello, Astronaut!</h1>
+				<p class="text-sm md:text-md">
 					Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
 					template serves as a lightweight, minimally-styled starting point for anyone looking to build
 					a personal website, blog, or portfolio with Astro.
-				</p>
+				</p-->
 				<ul class="pl-5 list-disc">
 					{posts.map((post) => (
 						<li>
-							<a class="text-blue-500 hover:text-blue-600" href={post.url}>{post.frontmatter.title}</a>
+							<a class="text-md text-blue-500 hover:text-blue-600" href={post.url}>{post.frontmatter.title}</a>
 						</li>
 					))}
 				</ul>

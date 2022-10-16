@@ -3,15 +3,177 @@ layout: '../../layouts/BlogPost.astro'
 title: 'How I created Dynamic Twitter Header'
 description: 'Lorem ipsum'
 pubDate: 'Oct 16 2022'
+heroImage: "../../../public/dynamic-twit-header.png"
 ---
 import { Code } from 'astro/components';
+import Link from "../../components/Link.astro";
+
+It was late 2021s when I was first introduced to the Twitter API. 
+Initially I tried making basic twitter bots which weren't much productive so I took a pause.
+Later in 2022 when I was more motivated into programming and automation, I started learning many backend stuffs and started developing scripts.
+
+There was one library known as <Link href="https://www.npmjs.com/package/@napi-rs/canvas">@napi-rs/canvas</Link> or <Link href="https://www.npmjs.com/package/canvas">canvas</Link> which generates Image just from code!
+
+OFC! it seems a cool library so I tried it. Initially, I was having a lot of issues working on it but later on it felt easy to use.
+
+Later that day, I was brainstorming and then suddenly thought about a script which could fetch a random fact from an external API which will be then processed into an Image and uploaded to Twitter as the user's header.
+
+I started working on the script/application using TypeScript cause why not? I started making a good program which would fetch the data from a random Quote API (<Link href="https://winterly-backend.herokuapp.com/">winterly-backend.herokuapp.com</Link>).
+
+I made a class called `HeaderClient` which will have the essential functions and variables to get and return a quote
 
 <Code
     code={`
-    suii
+    // src/utils/HeaderClient.ts
+
+    class HeaderClient {
+        out: WriteStream
+
+        constructor(out) {
+            this.out = out;
+        };
+
+        async getQuote(): Promise <QuoteData> {
+            const res = await axios({
+                method: "get",
+                url: "https://winterly-backend.herokuapp.com/quote",
+                responseType: "json"
+            })  
+            return res.data as QuoteData;
+        }
+
+        async renderHeader() {
+            // working with canvas
+        }
+    }
     `}
     lang="ts"
     theme="material-ocean"
 />
 
-P.S: UNDER DEVELOPMENT
+In the above code, I have a constructor where the out stream will be stored when the object of the class is created in the Main file.
+Inside the class, I have 2 main functions, one to get the quote and another one to render the image and save it to the out stream.
+
+<Code 
+    code={`
+    // src/utils/HeaderClient.ts
+
+    async renderHeader() {
+        await registerFont("", { family: "myFont" });
+        
+        const data = await this.getQuote();
+        
+        const canvas = createCanvas(3000, 1000);
+        const ctx = canvas.getContext("2d");
+
+        ctx.font = "myFont";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#4A5568";
+    }
+    `}
+    lang="ts"
+    theme="material-ocean"
+/>
+
+These are some basic initializations in which it first registers an external font, gets the data using the `getQuote` function we created above, creates a canvas with width as 3000 and height as 1000 as twitter supports 3:1 aspect ratio for headers (you can also use 1500x500),creates a canvas with width as 3000 and height as 1000 as twitter supports 3:1 aspect ratio for headers (you can also use 1500x500), creates a 2D context.
+
+Below the basic initializations, it assigns the stuffs to the context including the text alignment and the text's color.
+
+<Code 
+    code={`
+    // src/utils/HeaderClient.ts
+
+    async renderHeader() {
+        // ...
+
+        drawMultilineText(ctx, '"' + data.text + '" ~ ' + data.author, {
+            rect: {
+                x: 1500, 
+                y: 400,
+                width: canvas.width - 300,
+                height: canvas.height - 100
+            },
+            font: "myFont",
+            verbose: false,
+            lineHeight: 1.4,
+            minFontSize: 50,
+            maxFontSize: 70
+        })
+
+        const stream = canvas.createJPEGStream()
+        return stream.pipe(this.out);
+    }
+    `}
+    lang="ts"
+    theme="material-ocean"
+/>
+
+Here I'm using an external library <Link href="">canvas-multiline-text</Link> which generates a multi-lined text because the classic way sucks!
+
+After the image generation, I create the canvas's stream (basically the image's type JPG/PNG) and then saving the image with the out stream we will be passing while we call the class in Main script.
+
+<Code 
+    code={`
+    // src/intex.ts
+
+    const twitter = new Twit({
+        consumer_key: process.env.CONSUMER_KEY,
+        consumer_secret: process.env.CONSUMER_SECRET,
+        access_token: process.env.ACCESS_TOKEN,
+        access_token_secret: process.env.ACCESS_TOKEN_SECRET,
+        timeout_ms: 60 * 1000,
+        strictSSL: true,
+    });
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const out = fs.createWriteStream(__dirname + "/out.jpg");
+
+    const client = new HeaderClient(out);
+    `}
+    lang="ts"
+    theme="material-ocean"
+/>
+
+Here I create the important variables required for the main script.
+
+For the main script, we first need to create an Async function inside which it will first render the header.
+
+<Code 
+    code={`
+    // src/intex.ts
+
+    // ...
+
+    (async () => {
+        client.renderHeader();
+    
+        const fileToBase64String = fs.readFileSync(__dirname + "/out.jpg", {
+            encoding: "base64"
+        });
+
+        twitter.post("media/upload", { media_data: fileToBase64String }, (err: any, data: any, res: any) => {
+            let media_id = data.media_id_string;
+
+            twitter.post("account/update_profile_banner", { media_id: media_id }, (err: any, data: any, res: any) => {
+                if (err) return console.error(err);
+                else console.log(chalk.green("Updated twitter header!!"));
+            })
+        })
+
+    })();
+    `}
+    lang="ts"
+    theme="material-ocean"
+/>
+
+To upload images by using Twitter API we need to first convert the image to a base64 string, after generating the b64 string we first upload the media to twitter using the `media/upload` endpoint of Twitter API V1.
+It then returns a response which contains an ID of the uploaded image which we then use it to update our profile's banner using `account/update_profile_banner` endpoint.
+
+This is it!
+For the resulting code please visit the <Link href="https://github.com/MetalOoze05/dynamic-twitter-header/">GitHub Repository</Link> and drop a star if you like it!
+
+Thanks for Reading!
+
+# Credits:
+-- [Yashas (@rwlc)](https://github.com/rwlc) for helping me out with the twitter and impleming his own idea using puppeter!
