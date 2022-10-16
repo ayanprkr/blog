@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-	@apply bg-black text-white px-40 py-20 font-mono
+	@apply bg-black text-white px-10 py-5 md:px-40 md:py-20 font-mono
 }
 
 p {
